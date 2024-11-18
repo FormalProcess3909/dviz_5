@@ -27,7 +27,7 @@ class Child1 extends Component {
   // Adding handler for changing the selected company
   handleCompanyChange = (event) => {
     const selectedCompany = event.target.value;
-    console.log('Selected Company: ', selectedCompany);
+    console.log("Selected Company: ", selectedCompany);
     this.setState({ company: selectedCompany }, this.renderChart);
   };
 
@@ -41,14 +41,15 @@ class Child1 extends Component {
   renderChart = () => {
     // Save data to variable
     let data = this.props.csv_data.filter(
-      (d) => d.Company === this.state.company &&
-      new Date(d.Date).getMonth() ===
-      new Date(`${this.state.selectedMonth} 1, 2024`).getMonth()
+      (d) =>
+        d.Company === this.state.company &&
+        new Date(d.Date).getMonth() ===
+          new Date(`${this.state.selectedMonth} 1, 2024`).getMonth()
     );
     console.log("Filtered data:", data);
 
     data.forEach((d) => {
-      d.Date = new Date(d.Date)      
+      d.Date = new Date(d.Date);
     });
 
     // Set the dimensions of the chart
@@ -100,7 +101,7 @@ class Child1 extends Component {
       .data([data])
       .join("path")
       .attr("class", "line-path-open")
-      .attr("d", lineGeneratorOpen)
+      .attr("d", lineGeneratorOpen);
 
     // Draw Close line
     svg
@@ -119,19 +120,17 @@ class Child1 extends Component {
     ).stroke;
 
     svg
-  .selectAll(".x.axis")
-  .data([null])
-  .join("g")
-  .attr("class", "x axis")
-  .attr("transform", `translate(0,${innerHeight + 5})`)
-  .call(
-    d3.axisBottom(x_Scale)
-      .tickFormat(d3.timeFormat("%a %d")) // Format as "Fri 01", "Sat 02", etc.
-  )
-  .selectAll("text")
-  .attr("transform", `translate(20 15) rotate(45)`)
-  .style("font-size", "12px")
-
+      .selectAll(".x.axis")
+      .data([null])
+      .join("g")
+      .attr("class", "x axis")
+      .attr("transform", `translate(0,${innerHeight + 5})`)
+      .call(
+        d3.axisBottom(x_Scale).tickFormat(d3.timeFormat("%a %d"))
+      )
+      .selectAll("text")
+      .attr("transform", `translate(20 15) rotate(45)`)
+      .style("font-size", "12px");
 
     // Add the Y axis using join
     svg
@@ -151,7 +150,7 @@ class Child1 extends Component {
       ])
       .join("g")
       .attr("class", "legend")
-      .attr("transform", (d, i) => `translate(${innerWidth + 10}, ${i * 20})`); // Position legend to the right
+      .attr("transform", (d, i) => `translate(${innerWidth + 10}, ${i * 20})`);
 
     // Add legend rectangles
     legend
@@ -171,6 +170,10 @@ class Child1 extends Component {
       .text((d) => d.label)
       .style("font-size", "12px")
       .style("font-family", "Arial, sans-serif");
+
+    // Select the tooltip div
+    const tooltip = d3.select("#tooltip");
+
     // Draw circles for Open prices
     svg
       .selectAll(".circle-open")
@@ -179,7 +182,27 @@ class Child1 extends Component {
       .attr("class", "circle-open")
       .attr("cx", (d) => x_Scale(d.Date))
       .attr("cy", (d) => y_Scale(d.Open))
-      .attr("r", 3);
+      .attr("r", 3)
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("opacity", 1)
+          .html(
+            `<strong>Date:</strong> ${d3.timeFormat("%m/%d/%Y")(d.Date)}<br>
+             <strong>Open:</strong> ${d.Open.toFixed(2)}<br>
+             <strong>Close:</strong> ${d.Close.toFixed(2)}<br>
+             <strong>Difference:</strong> ${(d.Close - d.Open).toFixed(2)}`
+          )
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.style("opacity", 0);
+      });
 
     // Draw circles for Close prices
     svg
@@ -189,7 +212,27 @@ class Child1 extends Component {
       .attr("class", "circle-close")
       .attr("cx", (d) => x_Scale(d.Date))
       .attr("cy", (d) => y_Scale(d.Close))
-      .attr("r", 3);
+      .attr("r", 3)
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("opacity", 1)
+          .html(
+            `<strong>Date:</strong> ${d3.timeFormat("%m/%d/%Y")(d.Date)}<br>
+             <strong>Open:</strong> ${d.Open.toFixed(2)}<br>
+             <strong>Close:</strong> ${d.Close.toFixed(2)}<br>
+             <strong>Difference:</strong> ${(d.Close - d.Open).toFixed(2)}`
+          )
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 28}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.style("opacity", 0);
+      });
   };
 
   render() {
@@ -242,6 +285,11 @@ class Child1 extends Component {
             ))}
           </select>
         </div>
+        <div
+          id="tooltip"
+          className="tooltip"
+          style={{ position: "absolute", opacity: 0 }}
+        ></div>
         <svg id="mysvg" width="700" height="400">
           <g></g>
         </svg>
